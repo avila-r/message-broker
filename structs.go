@@ -45,11 +45,11 @@ type Message struct {
 }
 
 type Listener struct {
-	QueueName string
-	Consumer  string
-	AutoAck   bool
-	Exclusive bool
-	NoLocal   bool
-	NoWait    bool
-	Arguments amqp.Table
+	QueueName      string
+	Consumer       string
+	DisableAutoAck bool
+	Exclusive      bool
+	NoLocal        bool
+	NoWait         bool
+	Arguments      amqp.Table
 }
