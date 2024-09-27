@@ -1,10 +1,6 @@
 # Docker Compose file name
 DOCKER_COMPOSE_FILE = docker-compose.yml
 
-run:
-	@echo "Starting go application."
-	go run cmd/main.go
-
 # Command to start the docker-compose services
 start:
 	@echo "Starting services..."
