@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/avila-r/g"
 	"github.com/streadway/amqp"
 )
 
@@ -121,11 +120,15 @@ func (q *RabbitMQ) Produce(message Message) error {
 		content_type = c
 	}
 
+	json, err := json.Marshal(message.Body)
+
+	if err != nil {
+		return err
+	}
+
 	publishing := amqp.Publishing{
 		ContentType: content_type,
-		Body: []byte(g.First(
-			json.Marshal(message.Body),
-		)),
+		Body:        json,
 	}
 
 	return q.DefaultChannel.Publish(
@@ -135,13 +138,13 @@ func (q *RabbitMQ) Produce(message Message) error {
 
 func (q *RabbitMQ) NewConsumer(listener *Listener) (<-chan amqp.Delivery, error) {
 	var (
-		queue_name string
-		consumer   string     = ""
-		auto_ack   bool       = true
-		exclusive  bool       = false
-		no_local   bool       = false
-		no_wait    bool       = false
-		args       amqp.Table = nil
+		queue_name       string
+		consumer         string     = ""
+		disable_auto_ack bool       = false
+		exclusive        bool       = false
+		no_local         bool       = false
+		no_wait          bool       = false
+		args             amqp.Table = nil
 	)
 
 	if n := listener.QueueName; n != "" {
@@ -152,8 +155,8 @@ func (q *RabbitMQ) NewConsumer(listener *Listener) (<-chan amqp.Delivery, error)
 
 	consumer = listener.Consumer
 
-	if a := listener.AutoAck; !a {
-		auto_ack = a
+	if a := listener.DisableAutoAck; a {
+		disable_auto_ack = a
 	}
 
 	if e := listener.Exclusive; e {
@@ -173,7 +176,7 @@ func (q *RabbitMQ) NewConsumer(listener *Listener) (<-chan amqp.Delivery, error)
 	}
 
 	channel, err := q.DefaultChannel.Consume(
-		queue_name, consumer, auto_ack, exclusive, no_local, no_wait, args,
+		queue_name, consumer, disable_auto_ack, exclusive, no_local, no_wait, args,
 	)
 
 	return channel, err
